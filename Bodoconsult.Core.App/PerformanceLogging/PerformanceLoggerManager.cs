@@ -41,6 +41,8 @@ namespace Bodoconsult.Core.App.PerformanceLogging
             _watchDog ??= new WatchDog(Log, DelayUntilNextRunnerFired);
 
             _watchDog.StartWatchDog();
+
+            PerformanceLogger.StartLogger();
         }
 
         /// <summary>
@@ -54,6 +56,8 @@ namespace Bodoconsult.Core.App.PerformanceLogging
         public void StopLogging()
         {
             _watchDog.StopWatchDog();
+
+            PerformanceLogger.StopLogger();
         }
 
         /// <summary>

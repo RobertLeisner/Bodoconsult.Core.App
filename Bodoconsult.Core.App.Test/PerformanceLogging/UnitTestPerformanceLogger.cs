@@ -2,6 +2,7 @@
 
 
 using System.Diagnostics;
+using Bodoconsult.Core.App.Helpers;
 using Bodoconsult.Core.App.PerformanceLogging;
 
 namespace Bodoconsult.Core.App.Test.PerformanceLogging
@@ -17,12 +18,28 @@ namespace Bodoconsult.Core.App.Test.PerformanceLogging
             // Arrange 
             var logger = new PerformanceLogger();
 
-            // Act  
-            var s = logger.GetCountersAsString();
+            logger.StartLogger();
 
-            // Assert
-            Assert.IsFalse(string.IsNullOrEmpty(s));
-            Debug.Print(s);
+            for (int i = 0; i < 100; i++)
+            {
+                Thread.Sleep(50);
+            }
+
+            
+
+            logger.StopLogger();
+
+                // Act  
+                var s = logger.GetCountersAsString();
+
+                // Assert
+                Assert.IsFalse(string.IsNullOrEmpty(s));
+                Debug.Print(s);
+
+
+
+
+
 
         }
     }

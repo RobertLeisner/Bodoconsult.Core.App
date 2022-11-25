@@ -13,4 +13,14 @@ public interface IPerformanceLogger
     /// <returns>String with performance counter data</returns>
     string GetCountersAsString();
 
+    /// <summary>
+    /// Start the logger
+    /// </summary>
+    void StartLogger();
+
+    /// <summary>
+    /// Stop the logger
+    /// </summary>
+    void StopLogger();
+
 }
