@@ -54,9 +54,43 @@ The runner method is running on a separated background thread.
 
 ## IPerformanceLogger / PerformanceLogger
 
+The IPerformanceLogger implementations read performance counters and provide them as formatted string.
+
+``` csharp
+
+            // Arrange 
+            var logger = new PerformanceLogger();
+
+            // Act  
+            var s = logger.GetCountersAsString();
+
+            // Assert
+            Assert.IsFalse(string.IsNullOrEmpty(s));
+            Debug.Print(s);
+
+```
 
 ## IPerformanceLoggerManager / PerformanceLoggerManager
 
+The IPerformanceLoggerManager implementations are intended to fetch performance counter data from IPerformanceLogger implementations in a scheduled manner 
+and provide it as string to a delegate for further usage like logging.
+
+``` csharp
+
+        var logger = new PerformanceLogger();
+
+        var manager = new PerformanceLoggerManager(logger)
+        {
+            StatusMessageDelegate = StatusMessageDelegate
+        };
+
+        Assert.IsNotNull(manager);
+        Assert.IsNotNull(manager.PerformanceLogger);
+
+        // Act  
+        manager.StartLogging();
+
+```
 
 # About us
 
