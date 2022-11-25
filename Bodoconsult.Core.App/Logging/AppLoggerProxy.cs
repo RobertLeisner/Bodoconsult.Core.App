@@ -19,6 +19,8 @@ namespace Bodoconsult.Core.App.Logging
 
         private IWatchDog _loggerWatchDog;
 
+        private LogDataFactory _logDataFactory;
+
         public ILoggerFactory LoggerFactory { get; }
 
         private readonly ConcurrentQueue<LogData> _logMessages = new ConcurrentQueue<LogData>();
@@ -43,6 +45,9 @@ namespace Bodoconsult.Core.App.Logging
             LoggerFactory = logger ?? throw new ArgumentNullException(nameof(logger));
             _logger = logger.CreateLogger("Default");
             BaseCtor();
+
+            _logDataFactory = new LogDataFactory();
+            _logDataFactory.AllocateBufferPool(50);
         }
 
 
@@ -74,9 +79,9 @@ namespace Bodoconsult.Core.App.Logging
 
             while (_logMessages.Count > 0)
             {
-                var success = _logMessages.TryDequeue(out var message);
+                var success = _logMessages.TryDequeue(out var logData);
 
-                if (!success)
+                if (!success || logData == null)
                 {
                     await Task.Delay(DelayTimeQueueAccess).ConfigureAwait(false);
                     continue;
@@ -85,7 +90,7 @@ namespace Bodoconsult.Core.App.Logging
                 try
                 {
 
-                    var fileName = FileSystemHelper.GetFileNameWithoutExtension(message.SourceFile);
+                    var fileName = FileSystemHelper.GetFileNameWithoutExtension(logData.SourceFile);
 
                     //success = _loggers.TryGetValue(fileName, out var log);
 
@@ -95,16 +100,18 @@ namespace Bodoconsult.Core.App.Logging
                     //    _loggers.Add(fileName, log);
                     //}
 
-                    _logger.Log(message.LogLevel,
-                        message.EventId,
-                        message.Exception,
-                        $"{message.LogDate:yyyy.MM.dd HH:mm:ss.fffffff} - {message.LogLevel} - {fileName}.{message.SourceMethod}.R{message.SourceRowNumber} - {message.Message} {FormatArgs(message.Args)}");
+                    _logger.Log(logData.LogLevel,
+                        logData.EventId,
+                        logData.Exception,
+                        $"{logData.LogDate:yyyy.MM.dd HH:mm:ss.fffffff} - {logData.LogLevel} - {fileName}.{logData.SourceMethod}.R{logData.SourceRowNumber} - {logData.Message} {FormatArgs(logData.Args)}");
 
                 }
                 catch
                 {
                     Debug.Print("Logger error");
                 }
+
+                _logDataFactory.EnqueueInstance(logData);
             }
         }
 
@@ -134,17 +141,17 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Debug,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Debug;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
+
 
             FireAndForget(log);
         }
@@ -165,16 +172,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Debug,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Debug;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
 
@@ -196,15 +201,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Message = message,
-                LogLevel = LogLevel.Debug,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Message = message;
+            log.LogLevel = LogLevel.Debug;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -226,16 +229,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Message = message,
-                LogLevel = LogLevel.Debug,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Message = message;
+            log.LogLevel = LogLevel.Debug;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -254,15 +255,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Debug,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Debug;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -283,16 +282,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Debug,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Debug;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -309,14 +306,12 @@ namespace Bodoconsult.Core.App.Logging
             [CallerLineNumber] int lineNumber = 0
         )
         {
-            var log = new LogData
-            {
-                Message = message,
-                LogLevel = LogLevel.Debug,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Message = message;
+            log.LogLevel = LogLevel.Debug;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -335,15 +330,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerLineNumber] int lineNumber = 0
         )
         {
-            var log = new LogData
-            {
-                Message = message,
-                LogLevel = LogLevel.Debug,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Message = message;
+            log.LogLevel = LogLevel.Debug;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -365,16 +358,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Trace,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Trace;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -397,17 +388,15 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Trace,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Trace;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -426,15 +415,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Message = message,
-                LogLevel = LogLevel.Trace,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Message = message;
+            log.LogLevel = LogLevel.Trace;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -455,16 +442,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Message = message,
-                LogLevel = LogLevel.Trace,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Message = message;
+            log.LogLevel = LogLevel.Trace;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -483,15 +468,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Trace,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Trace;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -512,16 +495,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Trace,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Trace;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -537,14 +518,12 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Message = message,
-                LogLevel = LogLevel.Trace,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Message = message;
+            log.LogLevel = LogLevel.Trace;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -562,15 +541,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Message = message,
-                LogLevel = LogLevel.Trace,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Message = message;
+            log.LogLevel = LogLevel.Trace;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -591,16 +568,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Information,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Information;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -623,17 +598,15 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Information,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Information;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -652,15 +625,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Message = message,
-                LogLevel = LogLevel.Information,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Message = message;
+            log.LogLevel = LogLevel.Information;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -681,16 +652,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Message = message,
-                LogLevel = LogLevel.Information,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Message = message;
+            log.LogLevel = LogLevel.Information;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -709,15 +678,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Information,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Information;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -738,16 +705,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Information,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Information;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -763,14 +728,12 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Message = message,
-                LogLevel = LogLevel.Information,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Message = message;
+            log.LogLevel = LogLevel.Information;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -789,14 +752,12 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Message = message,
-                LogDate = timeStamp,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Message = message;
+            log.LogDate = timeStamp;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -814,15 +775,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Message = message,
-                LogLevel = LogLevel.Information,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Message = message;
+            log.LogLevel = LogLevel.Information;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -843,16 +802,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Warning,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Warning;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -875,17 +832,15 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Warning,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Warning;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -904,15 +859,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Message = message,
-                LogLevel = LogLevel.Warning,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Message = message;
+            log.LogLevel = LogLevel.Warning;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -933,16 +886,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Message = message,
-                LogLevel = LogLevel.Warning,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Message = message;
+            log.LogLevel = LogLevel.Warning;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -963,16 +914,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Warning,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Warning;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -991,15 +940,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Warning,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Warning;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -1017,15 +964,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Message = message,
-                LogLevel = LogLevel.Warning,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Message = message;
+            log.LogLevel = LogLevel.Warning;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -1042,14 +987,12 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Message = message,
-                LogLevel = LogLevel.Warning,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Message = message;
+            log.LogLevel = LogLevel.Warning;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -1064,14 +1007,12 @@ namespace Bodoconsult.Core.App.Logging
         public void LogError(string message, Exception exception, string memberName = "", string filepath = "",
             int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Exception = exception,
-                LogLevel = LogLevel.Error,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Exception = exception;
+            log.LogLevel = LogLevel.Error;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -1092,16 +1033,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Error,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Error;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -1124,17 +1063,15 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Error,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Error;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -1153,15 +1090,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Message = message,
-                LogLevel = LogLevel.Error,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Message = message;
+            log.LogLevel = LogLevel.Error;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -1182,16 +1117,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Message = message,
-                LogLevel = LogLevel.Error,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Message = message;
+            log.LogLevel = LogLevel.Error;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -1210,15 +1143,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Error,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Error;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -1239,16 +1170,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Error,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Error;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -1264,14 +1193,12 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Message = message,
-                LogLevel = LogLevel.Error,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Message = message;
+            log.LogLevel = LogLevel.Error;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -1289,15 +1216,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Message = message,
-                LogLevel = LogLevel.Error,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Message = message;
+            log.LogLevel = LogLevel.Error;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -1318,16 +1243,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Critical,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Critical;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -1351,17 +1274,15 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Critical,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Critical;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -1380,15 +1301,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Message = message,
-                LogLevel = LogLevel.Critical,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Message = message;
+            log.LogLevel = LogLevel.Critical;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -1409,16 +1328,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Message = message,
-                LogLevel = LogLevel.Critical,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Message = message;
+            log.LogLevel = LogLevel.Critical;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -1437,15 +1354,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Critical,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Critical;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -1466,16 +1381,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Exception = exception,
-                Message = message,
-                LogLevel = LogLevel.Critical,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = LogLevel.Critical;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -1491,14 +1404,12 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Message = message,
-                LogLevel = LogLevel.Critical,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Message = message;
+            log.LogLevel = LogLevel.Critical;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -1516,15 +1427,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Message = message,
-                LogLevel = LogLevel.Critical,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Message = message;
+            log.LogLevel = LogLevel.Critical;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -1546,15 +1455,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Message = message,
-                LogLevel = logLevel,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Message = message;
+            log.LogLevel = logLevel;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -1574,14 +1481,12 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Message = message,
-                LogLevel = logLevel,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Message = message;
+            log.LogLevel = logLevel;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -1603,15 +1508,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Message = message,
-                LogLevel = logLevel,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Message = message;
+            log.LogLevel = logLevel;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -1635,16 +1538,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                EventId = eventId,
-                Message = message,
-                LogLevel = logLevel,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.EventId = eventId;
+            log.Message = message;
+            log.LogLevel = logLevel;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }
@@ -1668,15 +1569,13 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Exception = exception,
-                Message = message,
-                LogLevel = logLevel,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = logLevel;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
 
             FireAndForget(log);
         }
@@ -1701,16 +1600,14 @@ namespace Bodoconsult.Core.App.Logging
             [CallerFilePath] string filepath = "",
             [CallerLineNumber] int lineNumber = 0)
         {
-            var log = new LogData
-            {
-                Exception = exception,
-                Message = message,
-                LogLevel = logLevel,
-                SourceFile = filepath,
-                SourceMethod = memberName,
-                SourceRowNumber = lineNumber,
-                Args = args
-            };
+            var log = _logDataFactory.DequeueInstance();
+            log.Exception = exception;
+            log.Message = message;
+            log.LogLevel = logLevel;
+            log.SourceFile = filepath;
+            log.SourceMethod = memberName;
+            log.SourceRowNumber = lineNumber;
+            log.Args = args;
 
             FireAndForget(log);
         }

@@ -32,10 +32,10 @@ namespace Bodoconsult.Core.App.BufferPool
         /// <summary>
         /// Pre-allocate a certain number of objects stored in the pool
         /// </summary>
-        /// <param name="count">Number of objects stored in the pool</param>
-        public void Allocate(int count)
+        /// <param name="numberOfInstances">Number of objects stored in the pool</param>
+        public void Allocate(int numberOfInstances)
         {
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < numberOfInstances; i++)
             {
                 _queue.Enqueue(_factoryMethod());
             }

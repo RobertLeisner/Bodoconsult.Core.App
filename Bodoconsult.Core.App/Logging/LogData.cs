@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Bodoconsult EDV-Dienstleistungen GmbH. All rights reserved.
 
+using Bodoconsult.Core.App.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Bodoconsult.Core.App.Logging
@@ -7,7 +8,7 @@ namespace Bodoconsult.Core.App.Logging
     /// <summary>
     /// Log data entity class
     /// </summary>
-    public class LogData
+    public class LogData: IResetable
     {
         /// <summary>
         /// The timestamp the log entry was originally created
@@ -18,18 +19,18 @@ namespace Bodoconsult.Core.App.Logging
         /// <summary>
         /// Actual log level
         /// </summary>
-        public LogLevel LogLevel { get; set; }
+        public LogLevel LogLevel { get; set; } = LogLevel.Information;
 
 
         /// <summary>
         /// Source file
         /// </summary>
-        public string SourceFile { get; set; }
+        public string SourceFile { get; set; } = string.Empty;
 
         /// <summary>
         /// Source method
         /// </summary>
-        public string SourceMethod { get; set; }
+        public string SourceMethod { get; set; } = string.Empty;
 
         /// <summary>
         /// Source row number
@@ -39,12 +40,12 @@ namespace Bodoconsult.Core.App.Logging
         /// <summary>
         /// Message to log
         /// </summary>
-        public string Message { get; set; }
+        public string Message { get; set; } = string.Empty;
 
         /// <summary>
         /// Exception to log
         /// </summary>
-        public Exception Exception { get; set; }
+        public Exception? Exception { get; set; } = null;
 
 
         /// <summary>
@@ -55,7 +56,19 @@ namespace Bodoconsult.Core.App.Logging
         /// <summary>
         /// Args delivered from the caller
         /// </summary>
-        public object[] Args { get; set; } = null;
+        public object[]? Args { get; set; } = null;
 
+        /// <summary>
+        /// Reset the class to default values
+        /// </summary>
+        public void Reset()
+        {
+            LogDate = DateTime.Now;
+            LogLevel = LogLevel.Information;
+            SourceFile = string.Empty;
+            SourceMethod = string.Empty;
+            Exception = null;
+            Args = null;
+        }
     }
 }

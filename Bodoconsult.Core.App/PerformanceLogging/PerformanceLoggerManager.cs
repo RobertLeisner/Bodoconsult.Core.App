@@ -44,9 +44,9 @@ namespace Bodoconsult.Core.App.PerformanceLogging
         }
 
         /// <summary>
-        /// The delay after the runner method was running in milliseconds
+        /// The delay after the runner method was running in milliseconds. Default value is 1000ms.
         /// </summary>
-        public int DelayUntilNextRunnerFired { get; set; }
+        public int DelayUntilNextRunnerFired { get; set; } = 1000;
 
         /// <summary>
         /// Stop the performance logging

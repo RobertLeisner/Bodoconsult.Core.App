@@ -59,7 +59,8 @@ public class UnitTestPerformanceLoggerManager
 
         var manager = new PerformanceLoggerManager(logger)
         {
-            StatusMessageDelegate = StatusMessageDelegate
+            StatusMessageDelegate = StatusMessageDelegate,
+            DelayUntilNextRunnerFired = 100
         };
 
         Assert.IsNotNull(manager);
