@@ -34,11 +34,11 @@ namespace Bodoconsult.Core.App.PerformanceLogging
 
         int _gcHeapSize;
 
-        private int _gen0GcCount;
+        //private int _gen0GcCount;
 
-        private int _gen1GcCount;
+        //private int _gen1GcCount;
 
-        private int _gen2GcCount;
+        //private int _gen2GcCount;
 
         private int _gen0GcSize;
 

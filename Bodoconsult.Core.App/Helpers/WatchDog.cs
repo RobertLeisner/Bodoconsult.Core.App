@@ -10,7 +10,7 @@ namespace Bodoconsult.Core.App.Helpers
     public class WatchDog : IWatchDog
     {
 
-        private CancellationToken _cancellationToken = new CancellationToken(false);
+        private CancellationToken _cancellationToken = new(false);
 
         private Thread _watchDogThread;
 
@@ -20,7 +20,7 @@ namespace Bodoconsult.Core.App.Helpers
         /// Default ctor
         /// </summary>
         /// <param name="watchDogRunnerDelegate"></param>
-        /// <param name="delayUntilNextRunnerFired">Delay until next run in milliseconds</param>
+        /// <param name="delayUntilNextRunnerFired">Delay until next run</param>
         public WatchDog(WatchDogRunnerDelegate watchDogRunnerDelegate, int delayUntilNextRunnerFired)
         {
             WatchDogRunnerDelegate = watchDogRunnerDelegate ?? throw new ArgumentNullException(nameof(watchDogRunnerDelegate));
@@ -32,7 +32,7 @@ namespace Bodoconsult.Core.App.Helpers
         /// Ctor with additional thread priority setting
         /// </summary>
         /// <param name="watchDogRunnerDelegate"></param>
-        /// <param name="delayUntilNextRunnerFired">Delay until next run in milliseconds</param>
+        /// <param name="delayUntilNextRunnerFired">Delay until next run</param>
         /// <param name="threadPriority">Thread priority</param>
         public WatchDog(WatchDogRunnerDelegate watchDogRunnerDelegate, int delayUntilNextRunnerFired, ThreadPriority threadPriority)
         {
@@ -109,27 +109,6 @@ namespace Bodoconsult.Core.App.Helpers
 
             _watchDogThread = null;
 
-            //if (_watchDogThread == null)
-            //{
-            //    return;
-            //}
-
-            //Wait.Until(() => !_watchDogThread.IsAlive);
-
-            //if (!_watchDogThread.IsAlive)
-            //{
-            //    return;
-            //}
-
-            //// If the thread is alive try to terminate it
-            //try
-            //{
-            //    _watchDogThread.Abort();
-            //}
-            //catch
-            //{
-            //    // Do nothing
-            //}
         }
     }
 }

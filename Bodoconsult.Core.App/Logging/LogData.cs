@@ -45,7 +45,7 @@ namespace Bodoconsult.Core.App.Logging
         /// <summary>
         /// Exception to log
         /// </summary>
-        public Exception? Exception { get; set; } = null;
+        public Exception Exception { get; set; } = null;
 
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Bodoconsult.Core.App.Logging
         /// <summary>
         /// Args delivered from the caller
         /// </summary>
-        public object[]? Args { get; set; } = null;
+        public object[] Args { get; set; } = null;
 
         /// <summary>
         /// Reset the class to default values

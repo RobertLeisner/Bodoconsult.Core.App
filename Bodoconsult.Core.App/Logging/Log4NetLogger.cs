@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Bodoconsult EDV-Dienstleistungen GmbH. All rights reserved.
 
+using System.Diagnostics;
 using System.Reflection;
 using System.Xml;
 using log4net;
@@ -90,6 +91,7 @@ namespace Bodoconsult.Core.App.Logging
             }
             catch (Exception e)
             {
+                Debug.Print(e.Message);
                 //logger.LogError("Error when initializing monitor logger: {0}",e);
             }
             _log = LogManager.GetLogger(repositoryName, loggerName);
