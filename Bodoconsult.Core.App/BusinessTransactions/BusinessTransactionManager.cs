@@ -4,7 +4,6 @@ using System.Diagnostics;
 using Bodoconsult.Core.App.BusinessTransactions.Replies;
 using Bodoconsult.Core.App.Delegates;
 using Bodoconsult.Core.App.Interfaces;
-using Bodoconsult.Core.App.Logging;
 
 namespace Bodoconsult.Core.App.BusinessTransactions;
 
