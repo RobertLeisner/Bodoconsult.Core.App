@@ -170,7 +170,7 @@ public class BusinessTransactionManager : IBusinessTransactionManager
 
             stopWatch.Stop();
 
-            _logger.LogDebug($"Transaction {transactionId} with GUID {requestData.TransactionGuid} was successful");
+            _logger.LogDebug($"Transaction {transactionId} with GUID {requestData.TransactionGuid} was successful. Duration {stopWatch.ElapsedMilliseconds} ms");
             _eventSource.ReportIncrement(BusinessTransactionEventSourceProvider.BtmRunBusinessTransactionSuccess);
             _eventSource.ReportMetric(BusinessTransactionEventSourceProvider.BtmRunBusinessTransactionDuration, stopWatch.ElapsedMilliseconds);
 

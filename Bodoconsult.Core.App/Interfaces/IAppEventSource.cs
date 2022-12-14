@@ -58,5 +58,19 @@ namespace Bodoconsult.Core.App.Interfaces
         /// <param name="value">Value to report as increment</param>
         void ReportIncrement(string name, float value);
 
+        /// <summary>
+        /// Get an <see cref="EventCounter"/> instance by its name
+        /// </summary>
+        /// <param name="name">Name of the requested instance</param>
+        /// <returns><see cref="EventCounter"/> instance or null</returns>
+        EventCounter GetMetricEventCounter(string name);
+
+        /// <summary>
+        /// Get an <see cref="IncrementingEventCounters"/> instance by its name
+        /// </summary>
+        /// <param name="name">Name of the requested instance</param>
+        /// <returns><see cref="EventCounter"/> instance or null</returns>
+        IncrementingEventCounter GetIncrementEventCounter(string name);
+
     }
 }

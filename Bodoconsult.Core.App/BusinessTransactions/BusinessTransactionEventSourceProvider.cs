@@ -1,10 +1,14 @@
 ﻿// Copyright (c) Bodoconsult EDV-Dienstleistungen GmbH. All rights reserved.
 
 using System.Diagnostics.Tracing;
+using Bodoconsult.Core.App.EventCounters;
 using Bodoconsult.Core.App.Interfaces;
 
 namespace Bodoconsult.Core.App.BusinessTransactions
 {
+    /// <summary>
+    /// Provider for business transaction management relevante event counters
+    /// </summary>
     public class BusinessTransactionEventSourceProvider: IEventSourceProvider
     {
         public const string BtmRunBusinessTransactionSuccess = "Btm.RunBusinessTransaction.Success";
@@ -15,36 +19,55 @@ namespace Bodoconsult.Core.App.BusinessTransactions
         /// Add <see cref="EventCounter"/> to the event source
         /// </summary>
         /// <param name="eventSource">Current event source</param>
-        public void AddEventCounters(EventSource eventSource)
+        public void AddEventCounters(AppApmEventSource eventSource)
         {
-            throw new NotImplementedException();
+            CreateBtRunTransactionDurationEventCounter(eventSource);
         }
+
+        private void CreateBtRunTransactionDurationEventCounter(AppApmEventSource eventSource)
+        {
+            var ec = new EventCounter(BtmRunBusinessTransactionDuration, eventSource);
+            ec.DisplayName = "Business transaction duration";
+            ec.DisplayUnits = "ms";
+
+            eventSource.EventCounters.Add(BtmRunBusinessTransactionDuration, ec);
+        }
+
 
         /// <summary>
         /// Add <see cref="IncrementingEventCounter"/> to the event source
         /// </summary>
         /// <param name="eventSource">Current event source</param>
-        public void AddIncrementingEventCounters(EventSource eventSource)
+        public void AddIncrementingEventCounters(AppApmEventSource eventSource)
         {
-            throw new NotImplementedException();
+            CreateRunBtSuccessIncrementEventCounter(eventSource);
+        }
+
+        private void CreateRunBtSuccessIncrementEventCounter(AppApmEventSource eventSource)
+        {
+            var ec = new IncrementingEventCounter(BtmRunBusinessTransactionSuccess, eventSource);
+            ec.DisplayName = "Business transaction running successfully";
+            ec.DisplayUnits = "runs";
+
+            eventSource.IncrementingEventCounters.Add(BtmRunBusinessTransactionSuccess, ec);
         }
 
         /// <summary>
         /// Add e<see cref="PollingCounter"/> to the event source
         /// </summary>
         /// <param name="eventSource">Current event source</param>
-        public void AddPollingCounters(EventSource eventSource)
+        public void AddPollingCounters(AppApmEventSource eventSource)
         {
-            throw new NotImplementedException();
+            // Do nothing
         }
 
         /// <summary>
         /// Add <see cref="IncrementingPollingCounter"/> to the event source
         /// </summary>
         /// <param name="eventSource">Current event source</param>
-        public void AddIncrementingPollingCounters(EventSource eventSource)
+        public void AddIncrementingPollingCounters(AppApmEventSource eventSource)
         {
-            throw new NotImplementedException();
+            // Do nothing
         }
     }
 }

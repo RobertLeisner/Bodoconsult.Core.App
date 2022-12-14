@@ -6,11 +6,18 @@ using Bodoconsult.Core.App.Interfaces;
 namespace Bodoconsult.Core.App.EventCounters
 {
     [EventSource(Name = "App-APM")]
-    public sealed class AppApmEventSource : EventSource, IAppEventSource 
+    public sealed class AppApmEventSource : EventSource, IAppEventSource
     {
+        private readonly IAppLoggerProxy _appLogger;
 
-        public static AppApmEventSource Log = new AppApmEventSource();
-
+        /// <summary>
+        /// Default ctor
+        /// </summary>
+        /// <param name="appLogger">Current app logger</param>
+        public AppApmEventSource(IAppLoggerProxy appLogger)
+        {
+            _appLogger = appLogger;
+        }
 
         /// <summary>
         /// Add an event source provider to the app event source
@@ -58,8 +65,11 @@ namespace Bodoconsult.Core.App.EventCounters
         {
             if (!EventCounters.TryGetValue(name, out var counterInstance))
             {
-                counterInstance = new EventCounter(name, this);
-                EventCounters.Add(name, counterInstance);
+                _appLogger.LogError($"Event counter {name} does NOT exist");
+                return;
+
+                //counterInstance = new EventCounter(name, this);
+                //EventCounters.Add(name, counterInstance);
             }
             counterInstance?.WriteMetric(value);
         }
@@ -73,10 +83,43 @@ namespace Bodoconsult.Core.App.EventCounters
         {
             if (!IncrementingEventCounters.TryGetValue(name, out var counterInstance))
             {
-                counterInstance = new IncrementingEventCounter(name, this);
-                IncrementingEventCounters.Add(name, counterInstance);
+                _appLogger.LogError($"Event counter {name} does NOT exist");
+                return;
+                //counterInstance = new IncrementingEventCounter(name, this);
+                //IncrementingEventCounters.Add(name, counterInstance);
             }
             counterInstance?.Increment(value);
+        }
+
+        /// <summary>
+        /// Get an <see cref="EventCounter"/> instance by its name
+        /// </summary>
+        /// <param name="name">Name of the requested instance</param>
+        /// <returns><see cref="EventCounter"/> instance or null</returns>
+        public EventCounter GetMetricEventCounter(string name)
+        {
+            if (EventCounters.TryGetValue(name, out var counterInstance))
+            {
+                return counterInstance;
+            }
+            _appLogger.LogError($"Event counter {name} does NOT exist");
+            return null;
+        }
+
+        /// <summary>
+        /// Get an <see cref="IAppEventSource.IncrementingEventCounters"/> instance by its name
+        /// </summary>
+        /// <param name="name">Name of the requested instance</param>
+        /// <returns><see cref="EventCounter"/> instance or null</returns>
+        public IncrementingEventCounter GetIncrementEventCounter(string name)
+        {
+            if (IncrementingEventCounters.TryGetValue(name, out var counterInstance))
+            {
+                return counterInstance;
+            }
+
+            _appLogger.LogError($"Event counter {name} does NOT exist");
+            return null;
         }
 
         /// <summary>
@@ -87,8 +130,11 @@ namespace Bodoconsult.Core.App.EventCounters
         {
             if (!IncrementingEventCounters.TryGetValue(name, out var counterInstance))
             {
-                counterInstance = new IncrementingEventCounter(name, this);
-                IncrementingEventCounters.Add(name, counterInstance);
+                _appLogger.LogError($"Event counter {name} does NOT exist");
+                return;
+
+                //counterInstance = new IncrementingEventCounter(name, this);
+                //IncrementingEventCounters.Add(name, counterInstance);
             }
             counterInstance?.Increment();
         }
