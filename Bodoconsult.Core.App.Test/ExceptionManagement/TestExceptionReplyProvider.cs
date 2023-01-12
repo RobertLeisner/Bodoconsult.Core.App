@@ -19,6 +19,13 @@ namespace Bodoconsult.Core.App.Test.ExceptionManagement
 
             ExceptionReplies.Add(nameof(ArgumentNullException), e);
 
+            //
+            e = new ExceptionReplyData
+            {
+                Message = "Test exception!"
+            };
+
+            ExceptionReplies.Add(nameof(TestException), e);
 
         }
 

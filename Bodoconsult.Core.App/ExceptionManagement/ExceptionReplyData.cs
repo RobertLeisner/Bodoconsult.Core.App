@@ -31,7 +31,7 @@ namespace Bodoconsult.Core.App.ExceptionManagement
         public bool EmptyErrorMessage { get; set; }
 
         /// <summary>
-        /// Iterate inner exceptions if existing
+        /// Iterate inner exceptions if existing. Default: true
         /// </summary>
         public bool IterateExceptions { get; set; } = true;
 

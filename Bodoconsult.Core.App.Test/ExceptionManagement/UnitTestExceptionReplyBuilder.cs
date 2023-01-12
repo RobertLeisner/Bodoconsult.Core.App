@@ -60,6 +60,27 @@ namespace Bodoconsult.Core.App.Test.ExceptionManagement
             Assert.IsNotNull(reply);
 
         }
-        
+
+        [Test]
+        public void TestCreateReplyExceptionWithErrorCode()
+        {
+            // Arrange 
+            const int errorCode = 12345;
+
+            IExceptionReplyProvider p = new TestExceptionReplyProvider();
+
+            IExceptionReplyBuilder e = new ExceptionReplyBuilder();
+
+            e.AddProvider(p);
+
+            var ex = new TestException("Hallo", errorCode);
+
+            // Act  
+            var reply = e.CreateReply(ex);
+
+            // Assert
+            Assert.IsNotNull(reply);
+            Assert.AreEqual(errorCode, reply.ErrorCode);
+        }
     }
 }

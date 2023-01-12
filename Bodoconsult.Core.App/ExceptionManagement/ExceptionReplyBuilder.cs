@@ -34,6 +34,13 @@ namespace Bodoconsult.Core.App.ExceptionManagement
 
             DefaultBusinessTransactionReply reply;
 
+            var errorCode = 0;
+
+            if (exception is IExceptionWithErrorCode e)
+            {
+                errorCode = e.ErrorCode;
+            }
+
             // Search data for the current exception
             var success = ExceptionReplies.TryGetValue(eName, out var eData);
 
@@ -42,7 +49,7 @@ namespace Bodoconsult.Core.App.ExceptionManagement
             {
                 reply = new DefaultBusinessTransactionReply
                 {
-                    ErrorCode = DefaultErrorCode, //  StSysErrorCodes.ExceptionOccursCode
+                    ErrorCode = errorCode == 0 ? DefaultErrorCode : errorCode, //  StSysErrorCodes.ExceptionOccursCode
                     ExceptionMessage = exception.StackTrace,
                     Message = $"Exception message: {exception.Message}"
                 };
@@ -53,12 +60,26 @@ namespace Bodoconsult.Core.App.ExceptionManagement
             // Return a customized reply
             reply = new DefaultBusinessTransactionReply
             {
-                ErrorCode = eData.ErrorCode == 0 ? DefaultErrorCode : eData.ErrorCode,
+                ErrorCode = errorCode == 0 ? eData.ErrorCode == 0 ? DefaultErrorCode : eData.ErrorCode : errorCode,
                 ExceptionMessage = eData.EmptyErrorMessage ? "" : exception.StackTrace,
-                Message = $"Exception message: {exception.Message} {eData.Message}"
+                Message = $"Exception message: {(eData.IterateExceptions ? IterateExceptions(exception) : exception.Message)} {eData.Message}"
             };
 
             return reply;
+        }
+
+        private static string IterateExceptions(Exception e)
+        {
+            var result = $"{e.Message} ";
+
+            if (e.InnerException == null)
+            {
+                return result;
+            }
+
+            result += IterateExceptions(e.InnerException);
+
+            return result;
         }
 
         /// <summary>
