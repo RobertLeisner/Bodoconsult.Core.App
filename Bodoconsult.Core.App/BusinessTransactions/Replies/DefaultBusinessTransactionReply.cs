@@ -24,5 +24,9 @@ namespace Bodoconsult.Core.App.BusinessTransactions.Replies
         /// </summary>
         public string Message { get; set; }
 
+        /// <summary>
+        /// Current error message provided by the business transaction
+        /// </summary>
+        public string ExceptionMessage { get; set; }
     }
 }

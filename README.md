@@ -92,6 +92,20 @@ and provide it as string to a delegate for further usage like logging.
 
 ```
 
+## IBusinessTransactionManager / IBusinessTransactionManager 
+
+A business transaction is defined here as an external call for a certain functionality of an app by a UI client, webservice or any other client of the app. IBusinessTransactionManager is intended as central point for inbound business transactions for the app.
+
+IBusinessTransactionManager delivers central features like logging and performance measurement for business transaction.
+
+ToDo: add more information
+
+## IExceptionReplyBuilder / ExceptionReplyBuilder
+
+ExceptionReplyBuilder delivers a central exception management to be used standalone or in conjunction with business transactions.
+
+ToDo: add more information
+
 # About us
 
 Bodoconsult <http://www.bodoconsult.de> is a Munich based software company from Germany.

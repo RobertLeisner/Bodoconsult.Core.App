@@ -24,4 +24,10 @@ public interface IBusinessTransactionReply
     /// </summary>
     string Message { get; set; }
 
+    /// <summary>
+    /// Current error message provided by the business transaction
+    /// </summary>
+
+    string ExceptionMessage { get; set; }
+
 }
