@@ -5,42 +5,41 @@ using System.Diagnostics;
 using Bodoconsult.Core.App.Helpers;
 using Bodoconsult.Core.App.PerformanceLogging;
 
-namespace Bodoconsult.Core.App.Test.PerformanceLogging
+namespace Bodoconsult.Core.App.Test.PerformanceLogging;
+
+[TestFixture]
+public class UnitTestPerformanceLogger
 {
-    [TestFixture]
-    public class UnitTestPerformanceLogger
+
+    [Test]
+    public void TestGetCountersAsString()
     {
 
-        [Test]
-        public void TestGetCountersAsString()
+        // Arrange 
+        var logger = new PerformanceLogger();
+
+        logger.StartLogger();
+
+        for (int i = 0; i < 100; i++)
         {
-
-            // Arrange 
-            var logger = new PerformanceLogger();
-
-            logger.StartLogger();
-
-            for (int i = 0; i < 100; i++)
-            {
-                Thread.Sleep(50);
-            }
+            Thread.Sleep(50);
+        }
 
             
 
-            logger.StopLogger();
+        logger.StopLogger();
 
-                // Act  
-                var s = logger.GetCountersAsString();
+        // Act  
+        var s = logger.GetCountersAsString();
 
-                // Assert
-                Assert.IsFalse(string.IsNullOrEmpty(s));
-                Debug.Print(s);
-
-
+        // Assert
+        Assert.IsFalse(string.IsNullOrEmpty(s));
+        Debug.Print(s);
 
 
 
 
-        }
+
+
     }
 }

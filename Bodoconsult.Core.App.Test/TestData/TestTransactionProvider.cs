@@ -5,36 +5,35 @@ using Bodoconsult.Core.App.Delegates;
 using Bodoconsult.Core.App.Interfaces;
 using Bodoconsult.Core.App.Test.SampleBusinessLogic;
 
-namespace Bodoconsult.Core.App.Test.TestData
+namespace Bodoconsult.Core.App.Test.TestData;
+
+internal class TestTransactionProvider: IBusinessTransactionProvider
 {
-    internal class TestTransactionProvider: IBusinessTransactionProvider
+    /// <summary>
+    /// A dictionary containing delegates for creating business transactions.
+    /// The key of the dictionary is the int tarnsaction ID
+    /// </summary>
+    public Dictionary<int, CreateBusinessTransactionDelegate> CreateBusinessTransactionDelegates { get; } = new();
+
+    public SampleBusinessLogicLayer SampleBusinessLogic { get; } 
+
+
+    public TestTransactionProvider()
     {
-        /// <summary>
-        /// A dictionary containing delegates for creating business transactions.
-        /// The key of the dictionary is the int tarnsaction ID
-        /// </summary>
-        public Dictionary<int, CreateBusinessTransactionDelegate> CreateBusinessTransactionDelegates { get; } = new();
+        SampleBusinessLogic = new SampleBusinessLogicLayer();
 
-        public SampleBusinessLogicLayer SampleBusinessLogic { get; } 
+        CreateBusinessTransactionDelegates.Add(1000, CreateTnr1000);
 
 
-        public TestTransactionProvider()
+    }
+
+    private BusinessTransaction CreateTnr1000()
+    {
+        return new BusinessTransaction
         {
-            SampleBusinessLogic = new SampleBusinessLogicLayer();
-
-            CreateBusinessTransactionDelegates.Add(1000, CreateTnr1000);
-
-
-        }
-
-        private BusinessTransaction CreateTnr1000()
-        {
-            return new BusinessTransaction
-            {
-                Id = 1000,
-                Name = "Testtransaction",
-                RunBusinessTransactionDelegate = SampleBusinessLogic.EmptyRequest
-            };
-        }
+            Id = 1000,
+            Name = "Testtransaction",
+            RunBusinessTransactionDelegate = SampleBusinessLogic.EmptyRequest
+        };
     }
 }

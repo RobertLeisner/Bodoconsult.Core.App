@@ -3,40 +3,39 @@
 using Bodoconsult.Core.App.Logging;
 using Microsoft.Extensions.Logging;
 
-namespace Bodoconsult.Core.App.Test.Logging
+namespace Bodoconsult.Core.App.Test.Logging;
+
+[TestFixture]
+internal class UnitTestsFakeLoggerFactory: BaseFakeLoggerTests
 {
-    [TestFixture]
-    internal class UnitTestsFakeLoggerFactory: BaseFakeLoggerTests
+
+    [SetUp]
+    public void Setup()
     {
+        LoggedMessages.Clear();
+    }
 
-        [SetUp]
-        public void Setup()
+    [Test]
+    public void TestCreateLogger()
+    {
+        // Arrange 
+        var factory = new FakeLoggerFactory
         {
-            LoggedMessages.Clear();
-        }
+            FakeLogDelegate = FakeLogDelegate
+        };
 
-        [Test]
-        public void TestCreateLogger()
-        {
-            // Arrange 
-            var factory = new FakeLoggerFactory
-            {
-                FakeLogDelegate = FakeLogDelegate
-            };
-
-            // Act  
-            var fake = (FakeLogger)factory.CreateLogger("TestCategrory");
+        // Act  
+        var fake = (FakeLogger)factory.CreateLogger("TestCategrory");
             
-            Assert.IsNotNull(fake);
-            Assert.IsTrue(LoggedMessages.Count == 0);
+        Assert.IsNotNull(fake);
+        Assert.IsTrue(LoggedMessages.Count == 0);
 
-            var logger = (ILogger)fake;
-            logger.Log(LogLevel.Critical, "Hallo");
+        var logger = (ILogger)fake;
+        logger.Log(LogLevel.Critical, "Hallo");
 
-            // Assert
-            Assert.IsTrue(LoggedMessages.Count == 1);
+        // Assert
+        Assert.IsTrue(LoggedMessages.Count == 1);
 
-            factory.Dispose();
-        }
+        factory.Dispose();
     }
 }

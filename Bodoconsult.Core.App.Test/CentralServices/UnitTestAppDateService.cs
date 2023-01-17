@@ -8,25 +8,24 @@ using System.Text;
 using System.Threading.Tasks;
 using Bodoconsult.Core.App.CentralServices;
 
-namespace Bodoconsult.Core.App.Test.CentralServices
+namespace Bodoconsult.Core.App.Test.CentralServices;
+
+[TestFixture]
+internal class UnitTestAppDateService
 {
-    [TestFixture]
-    internal class UnitTestAppDateService
+
+    [Test]
+    public void TestNow()
     {
+        // Arrange 
+        var service = new AppDateService();
 
-        [Test]
-        public void TestNow()
-        {
-            // Arrange 
-            var service = new AppDateService();
+        // Act  
+        var result = service.Now;
 
-            // Act  
-            var result = service.Now;
+        // Assert
+        Assert.IsNotNull(result);
 
-            // Assert
-            Assert.IsNotNull(result);
-
-        }
-        
     }
+        
 }

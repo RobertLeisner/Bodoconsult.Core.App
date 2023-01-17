@@ -3,48 +3,47 @@
 using System.Diagnostics;
 using Bodoconsult.Core.App.Helpers;
 
-namespace Bodoconsult.Core.App.Test.HelperTests
+namespace Bodoconsult.Core.App.Test.HelperTests;
+
+[TestFixture]
+public class UnitTestsWait
 {
-    [TestFixture]
-    public class UnitTestsWait
+
+
+    [Test]
+    public void TestUntilTimeout()
     {
-
-
-        [Test]
-        public void TestUntilTimeout()
-        {
-            // Arrange 
-            const int timeout = 4500;
+        // Arrange 
+        const int timeout = 4500;
             
-            var watch = Stopwatch.StartNew();
+        var watch = Stopwatch.StartNew();
 
 
-            // Act  
-            Wait.Until(() => false, timeout);
-            watch.Stop();
+        // Act  
+        Wait.Until(() => false, timeout);
+        watch.Stop();
 
-            // Assert
-            Assert.IsTrue(watch.ElapsedMilliseconds>= timeout);
+        // Assert
+        Assert.IsTrue(watch.ElapsedMilliseconds>= timeout);
             
-        }
+    }
 
 
-        [Test]
-        public void TestUntilPredicate()
-        {
-            // Arrange 
-            const int timeout = 4500;
+    [Test]
+    public void TestUntilPredicate()
+    {
+        // Arrange 
+        const int timeout = 4500;
 
-            var watch = Stopwatch.StartNew();
+        var watch = Stopwatch.StartNew();
 
-            // Act  
-            Wait.Until(() => true, timeout);
-            watch.Stop();
+        // Act  
+        Wait.Until(() => true, timeout);
+        watch.Stop();
 
-            // Assert
-            Assert.IsTrue(watch.ElapsedMilliseconds < timeout);
-
-        }
+        // Assert
+        Assert.IsTrue(watch.ElapsedMilliseconds < timeout);
 
     }
+
 }

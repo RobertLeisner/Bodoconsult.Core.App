@@ -3,27 +3,26 @@
 
 using Bodoconsult.Core.App.Interfaces;
 
-namespace Bodoconsult.Core.App.ExceptionManagement
+namespace Bodoconsult.Core.App.ExceptionManagement;
+
+/// <summary>
+/// Factory to create and return a singleton instance of <see cref="ExceptionReplyBuilder"/>
+/// </summary>
+public class ExceptionReplyBuilderFactory : IExceptionReplyBuilderFactory
 {
+
+    private IExceptionReplyBuilder _builder;
+
     /// <summary>
-    /// Factory to create and return a singleton instance of <see cref="ExceptionReplyBuilder"/>
+    /// Create or get a <see cref="ExceptionReplyBuilder"/> instance. Implements a singleton internally.
     /// </summary>
-    public class ExceptionReplyBuilderFactory : IExceptionReplyBuilderFactory
+    /// <param name="defaultErrorCode">Default error code</param>
+    /// <returns>Instance of <see cref="IExceptionReplyBuilder"/></returns>
+    public IExceptionReplyBuilder CreateInstance(int defaultErrorCode)
     {
-
-        private IExceptionReplyBuilder _builder;
-
-        /// <summary>
-        /// Create or get a <see cref="ExceptionReplyBuilder"/> instance. Implements a singleton internally.
-        /// </summary>
-        /// <param name="defaultErrorCode">Default error code</param>
-        /// <returns>Instance of <see cref="IExceptionReplyBuilder"/></returns>
-        public IExceptionReplyBuilder CreateInstance(int defaultErrorCode)
+        return _builder ??= new ExceptionReplyBuilder
         {
-            return _builder ??= new ExceptionReplyBuilder
-            {
-                DefaultErrorCode = 0
-            };
-        }
+            DefaultErrorCode = 0
+        };
     }
 }

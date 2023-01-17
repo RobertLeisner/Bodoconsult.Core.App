@@ -4,38 +4,37 @@
 using Bodoconsult.Core.App.Logging;
 using Microsoft.Extensions.Logging;
 
-namespace Bodoconsult.Core.App.Test.Logging
+namespace Bodoconsult.Core.App.Test.Logging;
+
+[TestFixture]
+internal class UnitTestsFakeLogger: BaseFakeLoggerTests
 {
-    [TestFixture]
-    internal class UnitTestsFakeLogger: BaseFakeLoggerTests
+
+    [SetUp]
+    public void Setup()
     {
+        LoggedMessages.Clear();
+    }
 
-        [SetUp]
-        public void Setup()
+
+    [Test]
+    public void TestLog()
+    {
+        // Arrange 
+        var fake = new FakeLogger("TestCategrory")
         {
-            LoggedMessages.Clear();
-        }
+            FakeLogDelegate = FakeLogDelegate
+        };
 
+        logger = fake;
 
-        [Test]
-        public void TestLog()
-        {
-            // Arrange 
-            var fake = new FakeLogger("TestCategrory")
-            {
-                FakeLogDelegate = FakeLogDelegate
-            };
+        // Act  
+        logger.Log(LogLevel.Critical, "Hallo");
 
-            logger = fake;
-
-            // Act  
-            logger.Log(LogLevel.Critical, "Hallo");
-
-            // Assert
-            Assert.IsTrue(LoggedMessages.Count == 1);
-
-        }
-
+        // Assert
+        Assert.IsTrue(LoggedMessages.Count == 1);
 
     }
+
+
 }

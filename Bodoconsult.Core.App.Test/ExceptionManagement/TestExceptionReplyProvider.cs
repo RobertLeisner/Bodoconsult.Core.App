@@ -4,31 +4,30 @@
 using Bodoconsult.Core.App.ExceptionManagement;
 using Bodoconsult.Core.App.Interfaces;
 
-namespace Bodoconsult.Core.App.Test.ExceptionManagement
+namespace Bodoconsult.Core.App.Test.ExceptionManagement;
+
+internal class TestExceptionReplyProvider : IExceptionReplyProvider
 {
-    internal class TestExceptionReplyProvider : IExceptionReplyProvider
+
+    public TestExceptionReplyProvider()
     {
-
-        public TestExceptionReplyProvider()
+        //
+        var e = new ExceptionReplyData
         {
-            //
-            var e = new ExceptionReplyData
-            {
-                Message =  "Argument may NOT be null!"
-            };
+            Message =  "Argument may NOT be null!"
+        };
 
-            ExceptionReplies.Add(nameof(ArgumentNullException), e);
+        ExceptionReplies.Add(nameof(ArgumentNullException), e);
 
-            //
-            e = new ExceptionReplyData
-            {
-                Message = "Test exception!"
-            };
+        //
+        e = new ExceptionReplyData
+        {
+            Message = "Test exception!"
+        };
 
-            ExceptionReplies.Add(nameof(TestException), e);
+        ExceptionReplies.Add(nameof(TestException), e);
 
-        }
-
-        public Dictionary<string, ExceptionReplyData> ExceptionReplies { get; } = new();
     }
+
+    public Dictionary<string, ExceptionReplyData> ExceptionReplies { get; } = new();
 }

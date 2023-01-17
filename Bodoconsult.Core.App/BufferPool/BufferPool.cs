@@ -3,61 +3,59 @@
 
 using System.Collections.Concurrent;
 
-namespace Bodoconsult.Core.App.BufferPool
+namespace Bodoconsult.Core.App.BufferPool;
+
+/// <summary>
+/// Buffer pool is used to store reusable objects to reduce GC pressure
+/// </summary>
+/// <typeparam name="T">Type of the object class to store</typeparam>
+public class BufferPool<T>
 {
+    private readonly Func<T> _factoryMethod;
+    private readonly ConcurrentQueue<T> _queue = new();
+
     /// <summary>
-    /// Buffer pool is used to store reusable objects to reduce GC pressure
+    /// Default ctor
     /// </summary>
-    /// <typeparam name="T">Type of the object class to store</typeparam>
-    public class BufferPool<T>
+    /// <param name="factoryMethod">Factory method for object creation</param>
+    public BufferPool(Func<T> factoryMethod)
     {
-        private readonly Func<T> _factoryMethod;
-        private readonly ConcurrentQueue<T> _queue = new();
+        _factoryMethod = factoryMethod;
+    }
 
-        /// <summary>
-        /// Default ctor
-        /// </summary>
-        /// <param name="factoryMethod">Factory method for object creation</param>
-        public BufferPool(Func<T> factoryMethod)
+    /// <summary>
+    /// The current length of the internal queue
+    /// </summary>
+    public int LengthOfQueue => _queue.Count;
+
+
+    /// <summary>
+    /// Pre-allocate a certain number of objects stored in the pool
+    /// </summary>
+    /// <param name="numberOfInstances">Number of objects stored in the pool</param>
+    public void Allocate(int numberOfInstances)
+    {
+        for (var i = 0; i < numberOfInstances; i++)
         {
-            _factoryMethod = factoryMethod;
-        }
-
-        /// <summary>
-        /// The current length of the internal queue
-        /// </summary>
-        public int LengthOfQueue => _queue.Count;
-
-
-        /// <summary>
-        /// Pre-allocate a certain number of objects stored in the pool
-        /// </summary>
-        /// <param name="numberOfInstances">Number of objects stored in the pool</param>
-        public void Allocate(int numberOfInstances)
-        {
-            for (var i = 0; i < numberOfInstances; i++)
-            {
-                _queue.Enqueue(_factoryMethod());
-            }
-        }
-
-        /// <summary>
-        /// Dequeue an object to use from buffer pool
-        /// </summary>
-        /// <returns></returns>
-        public T Dequeue()
-        {
-            return !_queue.TryDequeue(out var buffer) ? _factoryMethod() : buffer;
-        }
-
-        /// <summary>
-        /// Queue an used oject back to the buffer pool
-        /// </summary>
-        /// <param name="buffer">Resuable object to store in the pool</param>
-        public void Enqueue(T buffer)
-        {
-            _queue.Enqueue(buffer);
+            _queue.Enqueue(_factoryMethod());
         }
     }
 
+    /// <summary>
+    /// Dequeue an object to use from buffer pool
+    /// </summary>
+    /// <returns></returns>
+    public T Dequeue()
+    {
+        return !_queue.TryDequeue(out var buffer) ? _factoryMethod() : buffer;
+    }
+
+    /// <summary>
+    /// Queue an used oject back to the buffer pool
+    /// </summary>
+    /// <param name="buffer">Resuable object to store in the pool</param>
+    public void Enqueue(T buffer)
+    {
+        _queue.Enqueue(buffer);
+    }
 }

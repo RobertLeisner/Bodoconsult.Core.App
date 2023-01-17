@@ -2,18 +2,17 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Bodoconsult.Core.App.Interfaces
+namespace Bodoconsult.Core.App.Interfaces;
+
+/// <summary>
+/// Interface to separate monitor loggers from an app logger
+/// </summary>
+public interface IMonitorLoggerFactory : ILoggerFactory
 {
     /// <summary>
-    /// Interface to separate monitor loggers from an app logger
+    /// Current full file path to log int
     /// </summary>
-    public interface IMonitorLoggerFactory : ILoggerFactory
-    {
-        /// <summary>
-        /// Current full file path to log int
-        /// </summary>
-        string FileName { get;  }
+    string FileName { get;  }
 
 
-    }
 }

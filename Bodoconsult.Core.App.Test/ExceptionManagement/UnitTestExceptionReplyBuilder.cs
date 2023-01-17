@@ -4,83 +4,82 @@
 using Bodoconsult.Core.App.ExceptionManagement;
 using Bodoconsult.Core.App.Interfaces;
 
-namespace Bodoconsult.Core.App.Test.ExceptionManagement
+namespace Bodoconsult.Core.App.Test.ExceptionManagement;
+
+[TestFixture]
+internal class UnitTestExceptionReplyBuilder
 {
-    [TestFixture]
-    internal class UnitTestExceptionReplyBuilder
+
+    [Test]
+    public void TestCtor()
     {
+        // Arrange 
 
-        [Test]
-        public void TestCtor()
-        {
-            // Arrange 
+        // Act  
+        var e = new ExceptionReplyBuilder();
 
-            // Act  
-            var e = new ExceptionReplyBuilder();
+        // Assert
+        Assert.IsNotNull(e.ExceptionReplies);
+        Assert.IsFalse(e.ExceptionReplies.Any());
 
-            // Assert
-            Assert.IsNotNull(e.ExceptionReplies);
-            Assert.IsFalse(e.ExceptionReplies.Any());
+    }
 
-        }
+    [Test]
+    public void TestAddProvider()
+    {
+        // Arrange 
+        IExceptionReplyProvider p = new TestExceptionReplyProvider();
 
-        [Test]
-        public void TestAddProvider()
-        {
-            // Arrange 
-            IExceptionReplyProvider p = new TestExceptionReplyProvider();
-
-            IExceptionReplyBuilder e = new ExceptionReplyBuilder();
+        IExceptionReplyBuilder e = new ExceptionReplyBuilder();
             
-            // Act  
-            e.AddProvider(p);
+        // Act  
+        e.AddProvider(p);
 
-            // Assert
-            Assert.IsTrue(e.ExceptionReplies.Any());
+        // Assert
+        Assert.IsTrue(e.ExceptionReplies.Any());
 
-        }
+    }
 
 
-        [Test]
-        public void TestCreateReply()
-        {
-            // Arrange 
-            IExceptionReplyProvider p = new TestExceptionReplyProvider();
+    [Test]
+    public void TestCreateReply()
+    {
+        // Arrange 
+        IExceptionReplyProvider p = new TestExceptionReplyProvider();
 
-            IExceptionReplyBuilder e = new ExceptionReplyBuilder();
+        IExceptionReplyBuilder e = new ExceptionReplyBuilder();
  
-            e.AddProvider(p);
+        e.AddProvider(p);
 
-            var ex = new ArgumentNullException();
+        var ex = new ArgumentNullException();
 
-            // Act  
-            var reply = e.CreateReply(ex);
+        // Act  
+        var reply = e.CreateReply(ex);
 
-            // Assert
-            Assert.IsNotNull(reply);
+        // Assert
+        Assert.IsNotNull(reply);
 
-        }
+    }
 
-        [Test]
-        public void TestCreateReplyExceptionWithErrorCode()
-        {
-            // Arrange 
-            const int errorCode = 12345;
+    [Test]
+    public void TestCreateReplyExceptionWithErrorCode()
+    {
+        // Arrange 
+        const int errorCode = 12345;
 
-            IExceptionReplyProvider p = new TestExceptionReplyProvider();
+        IExceptionReplyProvider p = new TestExceptionReplyProvider();
 
-            IExceptionReplyBuilder e = new ExceptionReplyBuilder();
+        IExceptionReplyBuilder e = new ExceptionReplyBuilder();
 
-            e.AddProvider(p);
+        e.AddProvider(p);
 
-            var ex = new TestException("Hallo", errorCode);
+        var ex = new TestException("Hallo", errorCode);
 
-            // Act  
-            var reply = e.CreateReply(ex);
+        // Act  
+        var reply = e.CreateReply(ex);
 
-            // Assert
-            Assert.IsNotNull(reply);
-            Assert.AreEqual(errorCode, reply.ErrorCode);
-        }
+        // Assert
+        Assert.IsNotNull(reply);
+        Assert.AreEqual(errorCode, reply.ErrorCode);
     }
 }

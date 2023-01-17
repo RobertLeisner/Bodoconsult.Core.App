@@ -2,34 +2,33 @@
 
 using Bodoconsult.Core.App.Test.TestData;
 
-namespace Bodoconsult.Core.App.Test.BusinessTransactions
+namespace Bodoconsult.Core.App.Test.BusinessTransactions;
+
+[TestFixture]
+internal class UnitTestTestTransactionProvider
 {
-    [TestFixture]
-    internal class UnitTestTestTransactionProvider
+
+
+    [Test]
+    public void TestCreateBusinessTransactionDelegates()
     {
+        // Arrange 
+        const int tnr = 1000;
 
+        var prov = new TestTransactionProvider();
 
-        [Test]
-        public void TestCreateBusinessTransactionDelegates()
-        {
-            // Arrange 
-            const int tnr = 1000;
+        // Act  
+        prov.CreateBusinessTransactionDelegates.TryGetValue(tnr, out var test);
+        prov = null; // Kill the provider to see if the static delegate method is called correctly
 
-            var prov = new TestTransactionProvider();
+        // Assert
+        Assert.IsNotNull(test);
 
-            // Act  
-            prov.CreateBusinessTransactionDelegates.TryGetValue(tnr, out var test);
-            prov = null; // Kill the provider to see if the static delegate method is called correctly
+        var result = test?.Invoke();
 
-            // Assert
-            Assert.IsNotNull(test);
-
-            var result = test?.Invoke();
-
-            Assert.IsNotNull(result);
-
-        }
-        
+        Assert.IsNotNull(result);
 
     }
+        
+
 }

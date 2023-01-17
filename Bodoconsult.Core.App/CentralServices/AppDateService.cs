@@ -2,16 +2,15 @@
 
 using Bodoconsult.Core.App.Interfaces;
 
-namespace Bodoconsult.Core.App.CentralServices
+namespace Bodoconsult.Core.App.CentralServices;
+
+/// <summary>
+/// Current implementation of <see cref="IAppDateService"/> based on DateTime.Now()
+/// </summary>
+public class AppDateService: IAppDateService
 {
     /// <summary>
-    /// Current implementation of <see cref="IAppDateService"/> based on DateTime.Now()
+    /// Deliver the current date the app is running on
     /// </summary>
-    public class AppDateService: IAppDateService
-    {
-        /// <summary>
-        /// Deliver the current date the app is running on
-        /// </summary>
-        public DateTime Now => DateTime.Now;
-    }
+    public DateTime Now => DateTime.Now;
 }

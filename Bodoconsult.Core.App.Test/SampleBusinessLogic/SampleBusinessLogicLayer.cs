@@ -3,22 +3,21 @@
 using Bodoconsult.Core.App.BusinessTransactions.Replies;
 using Bodoconsult.Core.App.Interfaces;
 
-namespace Bodoconsult.Core.App.Test.SampleBusinessLogic
+namespace Bodoconsult.Core.App.Test.SampleBusinessLogic;
+
+internal class SampleBusinessLogicLayer
 {
-    internal class SampleBusinessLogicLayer
+
+    public IBusinessTransactionReply EmptyRequest(IBusinessTransactionRequestData requestData)
     {
 
-        public IBusinessTransactionReply EmptyRequest(IBusinessTransactionRequestData requestData)
+        return new DefaultBusinessTransactionReply()
         {
-
-            return new DefaultBusinessTransactionReply()
-            {
-                ErrorCode = 0,
-                Message = "Testmessage on success"
-            };
-        }
-
-
-
+            ErrorCode = 0,
+            Message = "Testmessage on success"
+        };
     }
+
+
+
 }

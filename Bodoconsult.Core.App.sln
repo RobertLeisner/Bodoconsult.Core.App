@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bodoconsult.Core.App", "Bod
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bodoconsult.Core.App.Test", "Bodoconsult.Core.App.Test\Bodoconsult.Core.App.Test.csproj", "{BF3FC761-8F27-4B26-8D99-BF931F67A7EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{B0B30AA2-B717-4422-AAC1-056525EA6D3B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{B0B30AA2-B717-4422-AAC1-056525EA6D3B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bodoconsult.Core.App.WinForms", "Bodoconsult.Core.App.WinForms\Bodoconsult.Core.App.WinForms.csproj", "{07C295A8-C0FF-45E3-82E7-D1D6BA2301BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{B0B30AA2-B717-4422-AAC1-056525EA6D3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0B30AA2-B717-4422-AAC1-056525EA6D3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0B30AA2-B717-4422-AAC1-056525EA6D3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07C295A8-C0FF-45E3-82E7-D1D6BA2301BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07C295A8-C0FF-45E3-82E7-D1D6BA2301BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07C295A8-C0FF-45E3-82E7-D1D6BA2301BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07C295A8-C0FF-45E3-82E7-D1D6BA2301BB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
